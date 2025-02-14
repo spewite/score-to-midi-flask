@@ -6,18 +6,23 @@ from werkzeug.utils import secure_filename
 from flask_cors import CORS
 import uuid
 from pathlib import Path
+from dotenv import load_dotenv
+
+# SCRIPTS
+from scripts.image_to_midi import image_to_midi
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-
 # Setup upload directory configuration
-UPLOAD_FOLDER = 'uploads'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-MIDI_FOLDER = 'midi'
-app.config['MIDI_FOLDER'] = MIDI_FOLDER
-
+app.config['UPLOAD_FOLDER'] = join(app.root_path, os.getenv('UPLOAD_FOLDER'))
+app.config['MIDI_FOLDER'] = join(app.root_path, os.getenv('MIDI_FOLDER'))
+app.config['MXL_FOLDER'] = join(app.root_path, os.getenv('MXL_FOLDER'))
+app.config['AUDIVERIS_PATH'] = join(app.root_path, os.getenv('AUDIVERIS_PATH'))
+app.config['AUDIVERIS_OUTPUT'] = join(app.root_path, os.getenv('AUDIVERIS_OUTPUT'))
 
 # API Routes
 @app.route("/", methods = ["POST", "GET"])
@@ -34,25 +39,36 @@ def upload_file():
 
     if 'file' not in request.files:
         return jsonify({'error': 'File not found in request'}), 400
-    
+
     file = request.files['file']
 
     if file.filename == '':
         return jsonify({'error': 'No se seleccionó ningún archivo'}), 400
     
     if file:
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
-        print("Directory: ", app.config['UPLOAD_FOLDER'])
-        print("Path: ", filename)
-       
-        return send_from_directory(directory=app.config['UPLOAD_FOLDER'], path=filename), 200
-    
-        # path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        # return send_file(path, as_attachment=True)
 
-        # return jsonify({'message': 'Archivo subido exitosamente', 'filename': filename}), 200
+        # Create a UUID to distuinguis the directory.
+        _uuid = str(uuid.uuid4())
+
+        # Create the directory to store the image
+        file_dir = join(app.config['UPLOAD_FOLDER'], _uuid)
+
+        if not os.path.exists(file_dir):
+            os.makedirs(file_dir)
+
+        # Get the file attributes
+        filename = secure_filename(file.filename)
+        filepath = join(file_dir, filename)
+        
+        # Save the file in its corresponding directory.
+        file.save(filepath)
+       
+        # Convert image into MIDI
+        print(filepath)
+        downlaodUrl = image_to_midi(filepath, _uuid)
+
+        return jsonify({'downloadUrl': downlaodUrl}), 200
+
     
 
 @app.route("/api/download/<uuid_str>")
