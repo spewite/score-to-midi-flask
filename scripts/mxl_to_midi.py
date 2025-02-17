@@ -1,44 +1,47 @@
-from music21 import converter
 from pathlib import Path
 from os.path import join
 import os
 from flask import current_app
+import partitura as pt
 
-def mxl_to_midi(mxl_path, _uuid): 
-
-  """
-    Converts a MXL file into a MIDI file.
+def mxl_to_midi(mxl_path, _uuid):
+    """
+    Convierte un archivo MXL (MusicXML comprimido) en un archivo MIDI utilizando Partitura.
 
     Args:
-      mxl_path: Path to the input MXL.
-      _uuid: Unique upload identifier
+        mxl_path: Ruta del archivo MXL de entrada.
+        _uuid: Identificador único para la subida.
 
     Returns:
-      The path of the generated MIDI file. 
-  
-  """
+        La ruta del archivo MIDI generado.
+    """
+    print("\n\nIniciando mxl_to_midi()...")
 
-  print("\n\nStarting mxl_to_midi()...")
+    # Verificar que el archivo exista
+    mxl_file = Path(mxl_path)
+    if not mxl_file.exists():
+        raise FileNotFoundError(f'{mxl_path} no existe.')
 
-  midi_output_dir = join(current_app.config.get("MIDI_FOLDER"), _uuid)
-  os.makedirs(midi_output_dir)
+    # Parsear el archivo MusicXML usando Partitura
+    print("Analizando el archivo MXL:", mxl_path)
+    try:
+        score = pt.load_score(mxl_path)
+    except Exception as e:
+        raise ValueError(f"Error al analizar MusicXML: {e}")
 
-  # Check if the file exists
-  mxl_file = Path(mxl_path)
+    # Crear la carpeta de salida para el MIDI
+    midi_output_dir = join(current_app.config.get("MIDI_FOLDER"), _uuid)
+    os.makedirs(midi_output_dir, exist_ok=True)
 
-  if not mxl_file.exists(): 
-    raise FileNotFoundError(f'{mxl_path} does not exist.')
+    print("Guardando el archivo MIDI.")
+    mxl_filename_base = mxl_file.stem
+    midi_file_path = join(midi_output_dir, f'{mxl_filename_base}.mid')
+    try:
+        # Convertir el score a un archivo MIDI
+        pt.save_score_midi(score, midi_file_path)
+    except Exception as e:
+        print(f"Advertencia: Error al guardar el archivo MIDI - {e}. El archivo MIDI podría estar incompleto o corrupto.")
 
-  # Load the XML file
-  print("Parsing the MXL file: ", mxl_path)
-  score = converter.parse(mxl_path)
-
-  # Save the MIDI file
-  print("Saving the MIDI file.")
-  mxl_filename_base = mxl_file.stem
-  midi_file_path = join(midi_output_dir, f'{mxl_filename_base}.midi')
-  score.write('midi', fp=midi_file_path)
-    
-  print("Midi file saved in: ", midi_file_path)
-  print("Finished mxl_to_midi() successfully...")
-  return midi_file_path
+    print("Archivo MIDI guardado en:", midi_file_path)
+    print("mxl_to_midi() finalizó exitosamente.")
+    return midi_file_path

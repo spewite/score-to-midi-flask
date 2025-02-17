@@ -65,9 +65,9 @@ def upload_file():
        
         # Convert image into MIDI
         print(filepath)
-        downlaodUrl = image_to_midi(filepath, _uuid)
+        midiUrl = image_to_midi(filepath, _uuid)
 
-        return jsonify({'downloadUrl': downlaodUrl}), 200
+        return jsonify({'_uuid': _uuid}), 200
 
     
 
@@ -98,13 +98,11 @@ def download_midi(uuid_str: str):
     # Pick the first MIDI file found
     midi_file = midi_files[0]
 
-    print(midi_file)
-
     # Attempt to send the file
     try:
-        return send_from_directory(directory=str(midi_dir), path=midi_file.name)
+        return send_from_directory(directory=str(midi_dir), path=midi_file.name, as_attachment=True, download_name=midi_file.name)
+        
     except Exception as exc:
-        app.logger.exception("Failed to send MIDI file: %s", midi_file.name)
         return jsonify({"error": "Server error while sending the file"}), 500
 
     
