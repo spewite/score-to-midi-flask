@@ -4,7 +4,7 @@ from os.path import join
 from pathlib import Path
 import shutil
 from flask import current_app
-
+from scripts.svg_to_png import convert_svg_to_png
 
 def image_to_mxl(image_path, _uuid):
 
@@ -28,6 +28,16 @@ def image_to_mxl(image_path, _uuid):
     if not image_file.exists(): 
         raise FileNotFoundError(f'{image_path} does not exist.')
 
+    # If the image is a .svg convert into .png
+    filename = os.path.splitext(os.path.basename(image_path))[0]
+    extension = os.path.splitext(os.path.basename(image_path))[1]
+
+    if extension == '.svg':
+        png_path = join(image_file.parent.resolve(), f'{filename}.png')
+        convert_svg_to_png(image_path, png_path)
+        image_path = png_path
+        image_file = Path(png_path)
+
     # Setup Audiveris
     audiveris_path = current_app.config.get("AUDIVERIS_PATH")
 
@@ -35,7 +45,6 @@ def image_to_mxl(image_path, _uuid):
         raise FileNotFoundError(f"Audiveris path not found at: {audiveris_path}")
 
     # Construct the Audiveris command.
-    filename = os.path.splitext(os.path.basename(image_path))[0]
     base_audiveris_dir = current_app.config.get("AUDIVERIS_OUTPUT")
     audiberis_output_dir = os.path.join(base_audiveris_dir, _uuid)
     Path(audiberis_output_dir).mkdir(parents=True, exist_ok=True)
@@ -53,6 +62,7 @@ def image_to_mxl(image_path, _uuid):
     mxl_output_dir = join(current_app.config.get("MXL_FOLDER"), _uuid)
 
     try:
+
         # Execute the command.
         print(f"Running audiveris process: {' '.join(command)}")
         result = subprocess.run(command, check=True, capture_output=True, text=True)
