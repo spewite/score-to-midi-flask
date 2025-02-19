@@ -31,3 +31,4 @@ def image_to_midi(image_path, _uuid):
     tb = traceback.extract_tb(e.__traceback__)
     function_name = tb[-1].name
     print(f"Error in {function_name}: {e}")
+    raise e

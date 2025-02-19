@@ -5,6 +5,7 @@ from pathlib import Path
 import shutil
 from flask import current_app
 from scripts.svg_to_png import convert_svg_to_png
+from errors.ScoreQualityError import ScoreQualityError
 
 def image_to_mxl(image_path, _uuid):
 
@@ -61,30 +62,36 @@ def image_to_mxl(image_path, _uuid):
 
     mxl_output_dir = join(current_app.config.get("MXL_FOLDER"), _uuid)
 
-    try:
+    # Execute the command.
+    print(f"Running audiveris process: {' '.join(command)}")
+    result = subprocess.run(command, check=True, capture_output=True, text=True)
+    print("Audiveris stdout:", result.stdout)
+    print("Audiveris processing complete.")
 
-        # Execute the command.
-        print(f"Running audiveris process: {' '.join(command)}")
-        result = subprocess.run(command, check=True, capture_output=True, text=True)
-        print("Audiveris stdout:", result.stdout)
-        print("Audiveris processing complete.")
+    if not checkCorrectExport(result.stdout):
+        print("Raising ScoreQualityError")
+        raise ScoreQualityError()
 
-        # Copy the generated MXL file into MXL_FOLDER/uuid/file_name.mxl
-        audiveris_mxl_path = join(audiberis_output_dir, f"{filename}.mxl")
-        print("audiveris_mxl_path: ", audiveris_mxl_path)
+    # Copy the generated MXL file into MXL_FOLDER/uuid/file_name.mxl
+    audiveris_mxl_path = join(audiberis_output_dir, f"{filename}.mxl")
 
-        if os.path.exists(audiveris_mxl_path):
-            print(f"Copying the MXL file into {mxl_output_dir} directory")
-            os.makedirs(mxl_output_dir)
-            final_mxl_path = join(mxl_output_dir, f"{filename}.mxl")
-            shutil.copy(audiveris_mxl_path, final_mxl_path)
+    if os.path.exists(audiveris_mxl_path):
+        print(f"Copying the MXL file into {mxl_output_dir} directory")
+        os.makedirs(mxl_output_dir)
+        final_mxl_path = join(mxl_output_dir, f"{filename}.mxl")
+        shutil.copy(audiveris_mxl_path, final_mxl_path)
 
-            print("MXL file saved correctly in:",  final_mxl_path)
-            print("Finished image_to_mxl() successfully...") 
-             
-            return final_mxl_path
-        else:
-            raise Exception(f"Could not find generated MXL file in {audiveris_mxl_path}")
+        print("MXL file saved correctly in:",  final_mxl_path)
+        print("Finished image_to_mxl() successfully...") 
+            
+        return final_mxl_path
+    else:
+        raise Exception(f"Could not find generated MXL file in {audiveris_mxl_path}")
 
-    except subprocess.CalledProcessError as e:
-        raise Exception("Error running Audiveris: ", e.stdout)
+
+
+def checkCorrectExport(stdout):
+    audiveris_error_text = "Could not export since transcription did not complete successfully"
+    return not audiveris_error_text in stdout
+        
+

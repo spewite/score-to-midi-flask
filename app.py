@@ -7,6 +7,7 @@ from flask_cors import CORS
 import uuid
 from pathlib import Path
 from dotenv import load_dotenv
+from errors.ScoreQualityError import ScoreQualityError
 
 # SCRIPTS
 from scripts.image_to_midi import image_to_midi
@@ -38,7 +39,7 @@ def upload_file():
     print("/api/upload: ")
 
     if 'file' not in request.files:
-        return jsonify({'error': 'File not found in request'}), 400
+        return jsonify({'error': 'No se seleccionó ningún archivo'}), 400
 
     file = request.files['file']
 
@@ -47,27 +48,36 @@ def upload_file():
     
     if file:
 
-        # Create a UUID to distuinguis the directory.
-        _uuid = str(uuid.uuid4())
+        try:
+                
+            # Create a UUID to distuinguish the directory.
+            _uuid = str(uuid.uuid4())
 
-        # Create the directory to store the image
-        file_dir = join(app.config['UPLOAD_FOLDER'], _uuid)
+            # Create the directory to store the image
+            file_dir = join(app.config['UPLOAD_FOLDER'], _uuid)
 
-        if not os.path.exists(file_dir):
-            os.makedirs(file_dir)
+            if not os.path.exists(file_dir):
+                os.makedirs(file_dir)
 
-        # Get the file attributes
-        filename = secure_filename(file.filename)
-        filepath = join(file_dir, filename)
+            # Get the file attributes
+            filename = secure_filename(file.filename)
+            filepath = join(file_dir, filename)
+            
+            # Save the file in its corresponding directory.
+            file.save(filepath)
         
-        # Save the file in its corresponding directory.
-        file.save(filepath)
-       
-        # Convert image into MIDI
-        print(filepath)
-        midiUrl = image_to_midi(filepath, _uuid)
+            # Convert image into MIDI
+            print(filepath)
+            image_to_midi(filepath, _uuid)
 
-        return jsonify({'_uuid': _uuid}), 200
+            return jsonify({'_uuid': _uuid}), 200
+        
+        except ScoreQualityError as error:
+            return jsonify({'error': "Could not read the score. Upload the image with higher quality."}), 400
+
+        except Exception as error:
+            return jsonify({'error': error}), 500
+    
 
     
 
