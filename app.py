@@ -7,7 +7,7 @@ from flask_cors import CORS
 import uuid
 from pathlib import Path
 from dotenv import load_dotenv
-from utils.Exceptions import ScoreQualityError, ScoreStructureError
+from utils.Exceptions import ScoreQualityError, ScoreStructureError, MidiNotFound
 from scripts.cleanup_data import clean_data
 
 # SCRIPTS
@@ -82,10 +82,13 @@ def upload_file():
 
             return jsonify({'_uuid': _uuid}), 200
         
-        except ScoreQualityError as error:
+        except MidiNotFound:
+            return jsonify({'error': "The server could not find the generated MIDI. Please try again."}), 400
+
+        except ScoreQualityError:
             return jsonify({'error': "Could not read the score. Upload the image with higher quality."}), 400
-        
-        except ScoreStructureError as error:
+
+        except ScoreStructureError:
             return jsonify({'error': "Could parse the score. Check if the structure of the score is correct."}), 400
 
         except Exception as error:

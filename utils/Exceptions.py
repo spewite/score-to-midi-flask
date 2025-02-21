@@ -6,3 +6,7 @@ class ScoreQualityError(Exception):
 class ScoreStructureError(Exception):
   """Raised when the score image structure is not correct."""
   pass
+
+class MidiNotFound(Exception):
+  """Raised when the MIDI file is not found."""
+  pass
