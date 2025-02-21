@@ -5,7 +5,7 @@ from pathlib import Path
 import shutil
 from flask import current_app
 from scripts.svg_to_png import convert_svg_to_png
-from errors.Exceptions import ScoreQualityError, ScoreStructureError
+from utils.Exceptions import ScoreQualityError, ScoreStructureError
 
 def image_to_mxl(image_path, _uuid):
 

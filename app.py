@@ -7,7 +7,7 @@ from flask_cors import CORS
 import uuid
 from pathlib import Path
 from dotenv import load_dotenv
-from errors.Exceptions import ScoreQualityError, ScoreStructureError
+from utils.Exceptions import ScoreQualityError, ScoreStructureError
 from scripts.cleanup_data import clean_data
 
 # SCRIPTS
