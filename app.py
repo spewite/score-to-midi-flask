@@ -77,10 +77,18 @@ def upload_file():
             file.save(filepath)
         
             # Convert image into MIDI
-            print(filepath)
-            image_to_midi(filepath, _uuid)
+            midi_path = image_to_midi(filepath, _uuid)
+            midi_file = Path(midi_path)
 
-            return jsonify({'_uuid': _uuid}), 200
+            # Validate if the MIDI exists
+            if not midi_file.exists():
+                raise 
+
+            # Get the midi files path MIDI
+            midi_folder = app.config.get("MIDI_FOLDER")
+            midi_dir = join(midi_folder, _uuid)
+        
+            return send_from_directory(directory=str(midi_dir), path=midi_file.name, as_attachment=True, download_name=midi_file.name), 200
         
         except MidiNotFound:
             return jsonify({'error': "The server could not find the generated MIDI. Please try again."}), 400
@@ -91,47 +99,8 @@ def upload_file():
         except ScoreStructureError:
             return jsonify({'error': "Could parse the score. Check if the structure of the score is correct."}), 400
 
-        except Exception as error:
-            return jsonify({'error': error}), 500
-    
-
-    
-
-@app.route("/api/download/<uuid_str>")
-def download_midi(uuid_str: str):
-    
-    # Validate UUID format
-    try:
-        uuid.UUID(uuid_str)
-    except ValueError:
-        return jsonify({"error": "Invalid UUID format"}), 400
-
-    # Get the configured MIDI folder
-    midi_folder = app.config.get("MIDI_FOLDER")
-    if not midi_folder:
-        return jsonify({"error": "Server misconfiguration"}), 500
-
-    # Build the path to the directory containing MIDI files
-    midi_dir = Path(join(midi_folder, uuid_str))
-    if not midi_dir.exists():
-        return jsonify({"error": "Could not link the UUID with any generated MIDI"}), 404
-
-    # Find MIDI files in the directory
-    midi_files = list(midi_dir.glob("*.midi"))
-    if not midi_files:
-        return jsonify({"error": "Could not find the generated MIDI file"}), 404
-
-    # Pick the first MIDI file found
-    midi_file = midi_files[0]
-
-    # Attempt to send the file
-    try:
-        return send_from_directory(directory=str(midi_dir), path=midi_file.name, as_attachment=True, download_name=midi_file.name)
-        
-    except Exception as exc:
-        return jsonify({"error": "Server error while sending the file"}), 500
-
-    
+        except Exception:
+            return jsonify({'error': "There has been an unexpected error in the conversion. Please try again."}), 500
 
 if __name__ == '__main__':
     app.run(debug=True) 
