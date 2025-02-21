@@ -5,7 +5,7 @@ from pathlib import Path
 import shutil
 from flask import current_app
 from scripts.svg_to_png import convert_svg_to_png
-from errors.ScoreQualityError import ScoreQualityError
+from errors.Exceptions import ScoreQualityError, ScoreStructureError
 
 def image_to_mxl(image_path, _uuid):
 
@@ -68,9 +68,7 @@ def image_to_mxl(image_path, _uuid):
     print("Audiveris stdout:", result.stdout)
     print("Audiveris processing complete.")
 
-    if not checkCorrectExport(result.stdout):
-        print("Raising ScoreQualityError")
-        raise ScoreQualityError()
+    checkCorrectExport(result.stdout)
 
     # Copy the generated MXL file into MXL_FOLDER/uuid/file_name.mxl
     audiveris_mxl_path = join(audiberis_output_dir, f"{filename}.mxl")
@@ -91,7 +89,15 @@ def image_to_mxl(image_path, _uuid):
 
 
 def checkCorrectExport(stdout):
-    audiveris_error_text = "Could not export since transcription did not complete successfully"
-    return not audiveris_error_text in stdout
+
+    java_exception = "java.lang.NullPointerException"
+    low_resolution = "try 300 DPI"
+
+    if java_exception in stdout:
+        raise ScoreStructureError()
+
+    if low_resolution in stdout:
+        raise ScoreQualityError()
+
         
 

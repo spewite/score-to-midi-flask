@@ -2,3 +2,7 @@
 class ScoreQualityError(Exception):
   """Raised when the score image quality is too low for processing."""
   pass
+
+class ScoreStructureError(Exception):
+  """Raised when the score image structure is not correct."""
+  pass
