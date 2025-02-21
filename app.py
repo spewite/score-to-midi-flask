@@ -7,7 +7,8 @@ from flask_cors import CORS
 import uuid
 from pathlib import Path
 from dotenv import load_dotenv
-from errors.ScoreQualityError import ScoreQualityError
+from errors.Exceptions import ScoreQualityError, ScoreStructureError
+from scripts.cleanup_data import clean_data
 
 # SCRIPTS
 from scripts.image_to_midi import image_to_midi
@@ -32,6 +33,15 @@ def hello_world():
   response = jsonify(message="Simple server is running")
   return response
 
+@app.route("/cleanup")
+def cleanup():
+    print("/cleanup GET")
+    try: 
+        clean_data()
+        return "Data folders cleaned up successfully", 200
+    except Exception as error:
+        return f"There has been an error cleaning the data: {error}", 500
+        
 
 @app.route("/api/upload", methods = ["POST"])
 def upload_file():
@@ -74,6 +84,9 @@ def upload_file():
         
         except ScoreQualityError as error:
             return jsonify({'error': "Could not read the score. Upload the image with higher quality."}), 400
+        
+        except ScoreStructureError as error:
+            return jsonify({'error': "Could parse the score. Check if the structure of the score is correct."}), 400
 
         except Exception as error:
             return jsonify({'error': error}), 500
