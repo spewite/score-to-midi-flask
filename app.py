@@ -91,16 +91,16 @@ def upload_file():
             return send_from_directory(directory=str(midi_dir), path=midi_file.name, as_attachment=True, download_name=midi_file.name), 200
         
         except MidiNotFound:
-            return jsonify({'error': "The server could not find the generated MIDI. Please try again."}), 400
+            return jsonify({'error': "The server could not find the generated MIDI. Please, try again."}), 400
 
         except ScoreQualityError:
-            return jsonify({'error': "Could not read the score. Upload the image with higher quality."}), 400
+            return jsonify({'error': "Could not read the score. Please, upload the image with higher quality."}), 400
 
         except ScoreStructureError:
-            return jsonify({'error': "Could parse the score. Check if the structure of the score is correct."}), 400
+            return jsonify({'error': "Could not parse the score. Please, check if the structure of the score is correct."}), 400
 
         except Exception:
-            return jsonify({'error': "There has been an unexpected error in the conversion. Please try again."}), 500
+            return jsonify({'error': "There has been an unexpected error in the conversion. Please, try again."}), 500
 
 if __name__ == '__main__':
     app.run(debug=True) 
