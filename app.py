@@ -100,7 +100,7 @@ def upload_file():
             return jsonify({'error': "Could not parse the score. Please, check if the structure of the score is correct."}), 400
 
         except ScoreTooLargeImageError:
-            return jsonify({'error': "Could not parse the score. The uploaded image was too large. Please, upload a smaller image"}), 400
+            return jsonify({'error': "The uploaded image was too large. Please, upload a smaller image"}), 400
 
         except Exception:
             return jsonify({'error': "There has been an unexpected error in the conversion. Please, try again."}), 500
