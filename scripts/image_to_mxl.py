@@ -5,7 +5,7 @@ from pathlib import Path
 import shutil
 from flask import current_app
 from scripts.svg_to_png import convert_svg_to_png
-from utils.Exceptions import ScoreQualityError, ScoreStructureError
+from utils.Exceptions import ScoreQualityError, ScoreStructureError, ScoreTooLargeImageError
 
 def image_to_mxl(image_path, _uuid):
 
@@ -65,6 +65,7 @@ def image_to_mxl(image_path, _uuid):
     # Execute the command.
     print(f"Running audiveris process: {' '.join(command)}")
     result = subprocess.run(command, capture_output=True, text=True)
+    
     if result.returncode != 0:
         print("Command failed!")
         print("Return code:", result.returncode)
@@ -95,12 +96,16 @@ def checkCorrectExport(stdout):
 
     java_exception = "java.lang.NullPointerException"
     low_resolution = "try 300 DPI"
+    too_large_image = "Too large image"
 
     if java_exception in stdout:
         raise ScoreStructureError()
 
     if low_resolution in stdout:
         raise ScoreQualityError()
+    
+    if too_large_image in stdout:
+        raise ScoreTooLargeImageError()
 
         
 

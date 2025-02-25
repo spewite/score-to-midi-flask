@@ -10,3 +10,7 @@ class ScoreStructureError(Exception):
 class MidiNotFound(Exception):
   """Raised when the MIDI file is not found."""
   pass
+
+class ScoreTooLargeImageError(Exception):
+  """Raised when the uploaded image is too large."""
+  pass

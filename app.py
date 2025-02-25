@@ -7,7 +7,7 @@ from flask_cors import CORS
 import uuid
 from pathlib import Path
 from dotenv import load_dotenv
-from utils.Exceptions import ScoreQualityError, ScoreStructureError, MidiNotFound
+from utils.Exceptions import ScoreQualityError, ScoreStructureError, ScoreTooLargeImageError, MidiNotFound
 from scripts.cleanup_data import clean_data
 
 # SCRIPTS
@@ -98,6 +98,9 @@ def upload_file():
 
         except ScoreStructureError:
             return jsonify({'error': "Could not parse the score. Please, check if the structure of the score is correct."}), 400
+
+        except ScoreTooLargeImageError:
+            return jsonify({'error': "Could not parse the score. The uploaded image was too large. Please, upload a smaller image"}), 400
 
         except Exception:
             return jsonify({'error': "There has been an unexpected error in the conversion. Please, try again."}), 500
