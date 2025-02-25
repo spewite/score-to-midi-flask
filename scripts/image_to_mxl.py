@@ -64,9 +64,12 @@ def image_to_mxl(image_path, _uuid):
 
     # Execute the command.
     print(f"Running audiveris process: {' '.join(command)}")
-    result = subprocess.run(command, check=True, capture_output=True, text=True)
-    print("Audiveris stdout:", result.stdout)
-    print("Audiveris processing complete.")
+    result = subprocess.run(command, capture_output=True, text=True)
+    if result.returncode != 0:
+        print("Command failed!")
+        print("Return code:", result.returncode)
+        print("Standard output:", result.stdout)
+        print("Standard error:", result.stderr)
 
     checkCorrectExport(result.stdout)
 
