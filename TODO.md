@@ -1,0 +1,2 @@
+- Implement allowed extensions validation.
+- Implement max file size validation.
