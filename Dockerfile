@@ -30,4 +30,4 @@ COPY . .
 RUN chmod +x /app/Audiveris/bin/Audiveris
 
 # Iniciamos la app
-CMD ["flask", "--app", "app.py", "--debug", "run", "--host=0.0.0.0"]
+CMD ["gunicorn", "-w", "3", "-b", "0.0.0.0:8000", "app:app"]
