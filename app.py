@@ -106,4 +106,9 @@ def upload_file():
             return jsonify({'error': "There has been an unexpected error in the conversion. Please, try again."}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True) 
+    # Solo para desarrollo
+    if os.getenv('FLASK_ENV') == 'development':
+        app.run(debug=True)
+    else:
+        # Configuración básica para pruebas de producción locales
+        app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)))
