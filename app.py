@@ -1,4 +1,5 @@
-from flask import Flask, request, jsonify, send_from_directory, send_file
+import sys
+from flask import Flask, logging, request, jsonify, send_from_directory, send_file
 import os
 from os import listdir, abort
 from os.path import isfile, join, exists
@@ -18,6 +19,20 @@ load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+
+# Disable Debug Mode
+app.config["DEBUG"] = False
+
+# Set up logging for production
+if not app.debug:
+    gunicorn_logger = logging.getLogger("gunicorn.error")
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)
+else:
+    # If running locally without Gunicorn, set up manual logging
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(logging.INFO)  # Change to DEBUG for more details
+    app.logger.addHandler(handler)
 
 # Setup upload directory configuration
 app.config['UPLOAD_FOLDER'] = join(app.root_path, os.getenv('UPLOAD_FOLDER'))
