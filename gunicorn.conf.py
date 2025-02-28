@@ -1,5 +1,4 @@
 
-capture_output = True
 bind = ":5000"
 workers = 3
 worker_class = "sync"

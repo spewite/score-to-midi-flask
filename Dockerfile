@@ -33,4 +33,5 @@ RUN chmod +x /app/Audiveris/bin/Audiveris
 RUN mkdir -p /var/log/gunicorn && chmod -R 777 /var/log/gunicorn
 
 # Iniciamos la app
-CMD ["gunicorn", "-c", "gunicorn.conf.py", "app:app"]
+# CMD ["gunicorn", "-c", "gunicorn.conf.py", "app:app"]
+CMD ["sh", "-c", "gunicorn -c gunicorn.conf.py app:app > /var/log/gunicorn/stdout.log 2> /var/log/gunicorn/stderr.log"]
