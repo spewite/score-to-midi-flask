@@ -35,7 +35,7 @@ jobs:
         key: ${{ secrets.DO_SSH_KEY }}
         port: ${{ secrets.DO_PORT }}
         script: |
-          cd /score-to-midi-flask
+          cd ~/score-to-midi-flask
           git pull
           docker-compose down
           docker-compose build --no-cache
