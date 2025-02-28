@@ -1,5 +1,6 @@
 import sys
-from flask import Flask, logging, request, jsonify, send_from_directory, send_file
+import logging
+from flask import Flask, request, jsonify, send_from_directory, send_file
 import os
 from os import listdir, abort
 from os.path import isfile, join, exists
