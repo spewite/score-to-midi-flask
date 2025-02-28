@@ -29,8 +29,8 @@ COPY . .
 # Damos permisos de ejecución al script (si no es un .bat)
 RUN chmod +x /app/Audiveris/bin/Audiveris
 
-# Iniciamos la app
-CMD ["gunicorn", "-w", "3", "-b", ":5000", "--log-level", "info", "--log-file", "-", "--access-logfile", "log/access.log", "--error-logfile", "log/general.log", "app:app"]
+# Crear directorio de logs (no en la imagen, sino en el volumen de docker-compose)
+RUN mkdir -p /var/log/gunicorn && chmod -R 777 /var/log/gunicorn
 
-# CMD ["gunicorn", "-w", "3", "-b", ":5000", "app:app"]
-# gunicorn -w 3 -b :5000 --log-level info --log-file - --access-logfile log/access.log --error-logfile log/general.log app:app
+# Iniciamos la app
+CMD ["gunicorn", "-c", "gunicorn.conf.py", "app:app"]

@@ -6,3 +6,5 @@ services:
     env_file:
       - .env
     restart: always  # Restart in case of error.
+    volumes:
+    - ./logs:/var/log/gunicorn  # Volumen para logs en el host
