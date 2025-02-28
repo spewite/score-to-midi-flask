@@ -30,4 +30,5 @@ COPY . .
 RUN chmod +x /app/Audiveris/bin/Audiveris
 
 # Iniciamos la app
-CMD ["gunicorn", "-w", "3", "-b", ":5000", "app:app", "--access-logfile", ".log/access.log", "--error-logfile", ".log/general.log"]
+CMD ["gunicorn", "-w", "3", "-b", ":5000", "app:app"]
+# CMD ["gunicorn", "-w", "3", "-b", ":5000", "app:app", "--access-logfile", ".log/access.log", "--error-logfile", ".log/general.log"]
