@@ -1,6 +1,6 @@
 import sys
 import logging
-from flask import Flask, request, jsonify, send_from_directory, send_file
+from flask import Flask, current_app, request, jsonify, send_from_directory, send_file
 import os
 from os import listdir, abort
 from os.path import isfile, join, exists
@@ -11,6 +11,9 @@ from pathlib import Path
 from dotenv import load_dotenv
 from utils.Exceptions import ScoreQualityError, ScoreStructureError, ScoreTooLargeImageError, MidiNotFound
 from scripts.cleanup_data import clean_data
+import magic 
+from PIL import Image
+from utils.validation import validate_file
 
 # SCRIPTS
 from scripts.image_to_midi import image_to_midi
@@ -28,28 +31,38 @@ app.config['MXL_FOLDER'] = join(app.root_path, os.getenv('MXL_FOLDER'))
 app.config['AUDIVERIS_PATH'] = join(app.root_path, os.getenv('AUDIVERIS_PATH'))
 app.config['AUDIVERIS_OUTPUT'] = join(app.root_path, os.getenv('AUDIVERIS_OUTPUT'))
 
+
 # API Routes
 @app.route('/health')
 def health():
     return {'status': 'healthy'}, 200
 
+
 @app.route("/api/upload", methods = ["POST"])
 def upload_file():
   
-    print("/api/upload: ")
+    current_app.logger.info("/api/upload:")
 
     if 'file' not in request.files:
-        return jsonify({'error': 'No se seleccionó ningún archivo'}), 400
+        return jsonify({'error': 'No file found in the request. Please, try again.'}), 400
 
     file = request.files['file']
 
-    if file.filename == '':
-        return jsonify({'error': 'No se seleccionó ningún archivo'}), 400
+    if secure_filename(file.filename) == '':
+        return jsonify({'error': 'No file found in the request. Please, try again.'}), 400
     
+    # Validate the file
+    is_valid, error_message = validate_file(file)
+    if not is_valid:
+        current_app.logger.warning(f"File validation failed: {error_message}")
+        return jsonify({'error': error_message}), 400
+
+    current_app.logger.info(f"The file passed all the validations.")
+
     if file:
 
         try:
-                
+               
             # Create a UUID to distuinguish the directory.
             _uuid = str(uuid.uuid4())
 
@@ -65,7 +78,8 @@ def upload_file():
             
             # Save the file in its corresponding directory.
             file.save(filepath)
-        
+            current_app.logger.info(f"File saved: {filepath}")
+
             # Convert image into MIDI
             midi_path = image_to_midi(filepath, _uuid)
             midi_file = Path(midi_path)

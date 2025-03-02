@@ -94,6 +94,8 @@ def image_to_mxl(image_path, _uuid):
 
 def checkCorrectExport(stdout):
 
+    current_app.logger.info(stdout)
+
     java_exception = "java.lang.NullPointerException"
     low_resolution = "try 300 DPI"
     too_large_image = "Too large image"
