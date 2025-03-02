@@ -1,3 +1,7 @@
+<!-- GENERAL -->
+# Give full permissions to files inside folder
+chmod -R 777 ./logs
+
 <!-- PYTHON -->
 
 # Run development enviroment 
@@ -35,7 +39,6 @@ docker build -t score-to-midi .
 docker run [-d] -p 5000:5000 score-to-midi
 docker run -e PYTHONUNBUFFERED=1 -p 5000:5000 score-to-midi
 docker run -e PYTHONUNBUFFERED=1 -p 5000:5000 --cpus="1.0" --memory="1G" score-to-midi
-
 
 # Delete stopped containers
 docker container prune

@@ -21,20 +21,6 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# Disable Debug Mode
-app.config["DEBUG"] = False
-
-# Set up logging for production
-if not app.debug:
-    gunicorn_logger = logging.getLogger("gunicorn.error")
-    app.logger.handlers = gunicorn_logger.handlers
-    app.logger.setLevel(gunicorn_logger.level)
-else:
-    # If running locally without Gunicorn, set up manual logging
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setLevel(logging.INFO)  # Change to DEBUG for more details
-    app.logger.addHandler(handler)
-
 # Setup upload directory configuration
 app.config['UPLOAD_FOLDER'] = join(app.root_path, os.getenv('UPLOAD_FOLDER'))
 app.config['MIDI_FOLDER'] = join(app.root_path, os.getenv('MIDI_FOLDER'))

@@ -1,4 +1,3 @@
-
 bind = ":5000"
 workers = 3
 worker_class = "sync"
@@ -10,3 +9,6 @@ errorlog = "/var/log/gunicorn/error.log"
 
 # Formato del log de acceso
 access_log_format = "%(h)s %(l)s %(u)s %(t)s %(r)s %(s)s %(b)s %(f)s %(a)s"
+
+# Capturar salida de stdout en un archivo separado
+capture_output = True
