@@ -16,7 +16,11 @@ from scripts.image_to_midi import image_to_midi
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+
+CORS(app, resources={
+    r"/api/upload": {"origins": "https://score-to-midi.com"},
+    r"/health": {"origins": "*"}  # Health check endpoint could be open to all
+})
 
 # Setup upload directory configuration
 app.config['UPLOAD_FOLDER'] = join(app.root_path, os.getenv('UPLOAD_FOLDER'))
