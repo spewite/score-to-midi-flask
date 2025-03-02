@@ -29,20 +29,9 @@ app.config['AUDIVERIS_PATH'] = join(app.root_path, os.getenv('AUDIVERIS_PATH'))
 app.config['AUDIVERIS_OUTPUT'] = join(app.root_path, os.getenv('AUDIVERIS_OUTPUT'))
 
 # API Routes
-
 @app.route('/health')
 def health():
     return {'status': 'healthy'}, 200
-
-# @app.route("/cleanup")
-# def cleanup():
-#     print("/cleanup GET")
-#     try: 
-#         clean_data()
-#         return "Data folders cleaned up successfully", 200
-#     except Exception as error:
-#         return f"There has been an error cleaning the data: {error}", 500
-        
 
 @app.route("/api/upload", methods = ["POST"])
 def upload_file():
