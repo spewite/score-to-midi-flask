@@ -1,18 +1,12 @@
-import sys
-import logging
-from flask import Flask, current_app, request, jsonify, send_from_directory, send_file
+from flask import Flask, current_app, request, jsonify, send_from_directory
 import os
-from os import listdir, abort
-from os.path import isfile, join, exists
+from os.path import join
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
 import uuid
 from pathlib import Path
 from dotenv import load_dotenv
 from utils.Exceptions import ScoreQualityError, ScoreStructureError, ScoreTooLargeImageError, MidiNotFound
-from scripts.cleanup_data import clean_data
-import magic 
-from PIL import Image
 from utils.validation import validate_file
 
 # SCRIPTS

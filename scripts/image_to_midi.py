@@ -1,6 +1,5 @@
 from scripts.mxl_to_midi import mxl_to_midi
 from scripts.image_to_mxl import image_to_mxl
-import os
 import traceback
 
 
