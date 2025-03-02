@@ -17,10 +17,14 @@ load_dotenv()
 
 app = Flask(__name__)
 
-CORS(app, resources={
-    r"/api/upload": {"origins": "https://score-to-midi.com"},
-    r"/health": {"origins": "*"}  # Health check endpoint could be open to all
-})
+if os.getenv('FLASK_ENV') == 'development':
+    CORS(app)
+else:
+    CORS(app, resources={
+        r"/api/upload": {"origins": "https://score-to-midi.com"},
+        r"/health": {"origins": "*"}  # Health check endpoint could be open to all
+    })
+    
 
 # Setup upload directory configuration
 app.config['UPLOAD_FOLDER'] = join(app.root_path, os.getenv('UPLOAD_FOLDER'))
