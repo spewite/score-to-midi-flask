@@ -3,10 +3,11 @@ from logging.handlers import SysLogHandler
 import socket
 
 # Basic Gunicorn configuration
-bind = ":5000"
+bind = "127.0.0.0:5000"
 workers = 3
 worker_class = "sync"
 loglevel = "info"
+secure_scheme_headers = {"X-Forwarded-Proto": "https"}  # Important for HTTPS detection
 
 # Local log files (keep these for backup)
 accesslog = "/var/log/gunicorn/access.log"

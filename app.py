@@ -43,6 +43,7 @@ app.config['AUDIVERIS_OUTPUT'] = join(app.root_path, os.getenv('AUDIVERIS_OUTPUT
 # API Routes
 @app.route('/health')
 def health():
+    current_app.logger.info("/health")
     return {'status': 'healthy'}, 200
 
 
