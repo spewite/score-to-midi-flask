@@ -1,7 +1,7 @@
 from scripts.mxl_to_midi import mxl_to_midi
 from scripts.image_to_mxl import image_to_mxl
 import traceback
-
+from flask import current_app
 
 def image_to_midi(image_path, _uuid): 
 
@@ -29,5 +29,5 @@ def image_to_midi(image_path, _uuid):
   except Exception as e:
     tb = traceback.extract_tb(e.__traceback__)
     function_name = tb[-1].name
-    print(f"Error in {function_name}: {e}")
+    current_app.logger.error(f"Error in {function_name}: {e}")
     raise e

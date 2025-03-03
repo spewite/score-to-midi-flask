@@ -23,4 +23,4 @@ def cleanup_directory(dir):
           elif os.path.isdir(file_path):
             shutil.rmtree(file_path)
       except Exception as e:
-          print('Failed to delete %s. Reason: %s' % (file_path, e))
+          current_app.logger.error('Failed to delete %s. Reason: %s' % (file_path, e))

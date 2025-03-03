@@ -21,7 +21,7 @@ def image_to_mxl(image_path, _uuid):
 
     """
 
-    print("\n\nStarting image_to_mxl()...")
+    current_app.logger.info("\n\nStarting image_to_mxl()...")
 
     # Check if the file exists
     image_file = Path(image_path)
@@ -63,14 +63,13 @@ def image_to_mxl(image_path, _uuid):
     mxl_output_dir = join(current_app.config.get("MXL_FOLDER"), _uuid)
 
     # Execute the command.
-    print(f"Running audiveris process: {' '.join(command)}")
+    current_app.logger.info(f"Running audiveris process: {' '.join(command)}")
     result = subprocess.run(command, capture_output=True, text=True)
     
     if result.returncode != 0:
-        print("Command failed!")
-        print("Return code:", result.returncode)
-        print("Standard output:", result.stdout)
-        print("Standard error:", result.stderr)
+        current_app.logger.error("Command failed!")
+        current_app.logger.error("Return code:", result.returncode)
+        current_app.logger.error(result.stdout)
 
     checkCorrectExport(result.stdout)
 
@@ -78,13 +77,13 @@ def image_to_mxl(image_path, _uuid):
     audiveris_mxl_path = join(audiberis_output_dir, f"{filename}.mxl")
 
     if os.path.exists(audiveris_mxl_path):
-        print(f"Copying the MXL file into {mxl_output_dir} directory")
+        current_app.logger.info(f"Copying the MXL file into {mxl_output_dir} directory")
         os.makedirs(mxl_output_dir)
         final_mxl_path = join(mxl_output_dir, f"{filename}.mxl")
         shutil.copy(audiveris_mxl_path, final_mxl_path)
 
-        print("MXL file saved correctly in:",  final_mxl_path)
-        print("Finished image_to_mxl() successfully...") 
+        current_app.logger.info("MXL file saved correctly in:",  final_mxl_path)
+        current_app.logger.info("Finished image_to_mxl() successfully...") 
             
         return final_mxl_path
     else:
@@ -93,8 +92,6 @@ def image_to_mxl(image_path, _uuid):
 
 
 def checkCorrectExport(stdout):
-
-    current_app.logger.info(stdout)
 
     java_exception = "java.lang.NullPointerException"
     low_resolution = "try 300 DPI"

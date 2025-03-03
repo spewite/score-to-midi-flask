@@ -52,8 +52,6 @@ def validate_file(file):
     file_content = file.read(2048)  # Read first 2048 bytes for MIME detection
     file.seek(0)  # Reset file pointer
     
-    print(file)
-
     mime_type = magic.from_buffer(file_content, mime=True)
     if mime_type not in ALLOWED_MIME_TYPES:
         return False, f"File content does not match allowed types. Detected: {mime_type}"

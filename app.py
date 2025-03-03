@@ -101,18 +101,23 @@ def upload_file():
             return send_from_directory(directory=str(midi_dir), path=midi_file.name, as_attachment=True, download_name=midi_file.name), 200
         
         except MidiNotFound:
+            current_app.logger.error("MidiNotFound exception")
             return jsonify({'error': "The server could not find the generated MIDI. Please, try again."}), 400
 
         except ScoreQualityError:
+            current_app.logger.error("ScoreQualityError exception")
             return jsonify({'error': "Could not read the score. Please, upload the image with higher quality."}), 400
 
         except ScoreStructureError:
+            current_app.logger.error("ScoreStructureError exception")
             return jsonify({'error': "Could not parse the score. Please, check if the structure of the score is correct."}), 400
 
         except ScoreTooLargeImageError:
+            current_app.logger.error("ScoreTooLargeImageError exception")
             return jsonify({'error': "The uploaded image was too large. Please, upload a smaller image"}), 400
 
-        except Exception:
+        except Exception as exception:
+            current_app.logger.error(f"Genral exception: {exception}")
             return jsonify({'error': "There has been an unexpected error in the conversion. Please, try again."}), 500
 
 if __name__ == '__main__':
