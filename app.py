@@ -18,9 +18,6 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# Load configuration
-app.config.from_object('config.ProductionConfig')
-    
 # Configure logging
 configure_logging(app)
 
