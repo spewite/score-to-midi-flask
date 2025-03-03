@@ -8,6 +8,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from utils.Exceptions import ScoreQualityError, ScoreStructureError, ScoreTooLargeImageError, MidiNotFound
 from utils.validation import validate_file
+from utils.config import configure_logging
 
 # SCRIPTS
 from scripts.image_to_midi import image_to_midi
@@ -16,6 +17,12 @@ from scripts.image_to_midi import image_to_midi
 load_dotenv()
 
 app = Flask(__name__)
+
+# Load configuration
+app.config.from_object('config.ProductionConfig')
+    
+# Configure logging
+configure_logging(app)
 
 if os.getenv('FLASK_ENV') == 'development':
     CORS(app)
