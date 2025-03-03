@@ -3,7 +3,7 @@ from logging.handlers import SysLogHandler
 import socket
 
 # Basic Gunicorn configuration
-bind = "127.0.0.0:5000"
+bind = "0.0.0.0:5000"
 workers = 3
 worker_class = "sync"
 loglevel = "info"
