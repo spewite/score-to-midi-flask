@@ -3,6 +3,7 @@ from logging.handlers import SysLogHandler
 import socket
 
 # Basic Gunicorn configuration
+timeout = 300
 bind = "0.0.0.0:5000"
 workers = 3
 worker_class = "sync"
