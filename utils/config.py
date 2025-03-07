@@ -8,8 +8,12 @@ def configure_logging(app):
     
     # Ensure log directory exists
     log_dir = os.path.join(app.root_path, 'logs')
-    if not os.path.exists(log_dir):
-        os.mkdir(log_dir)
+    try:
+        os.makedirs(log_dir, exist_ok=True)
+    except Exception as e:
+        app.logger.warning(f"Could not create/access log directory: {e}")
+        # Fall back to the app's root directory if needed
+        log_dir = app.root_path
     
     # Set up file logging with rotation
     file_handler = RotatingFileHandler(

@@ -9,7 +9,7 @@ ALLOWED_PIXELS = 7000
 ALLOWED_MIME_TYPES = {
     'image/png', 
     'image/jpeg', 
-    'image/svg+xml'
+    'image/svg+xml',
     "image/bmp",
     "application/pdf"
 }
@@ -57,7 +57,7 @@ def validate_file(file):
         return False, f"File content does not match allowed types. Detected: {mime_type}"
        
     # Check image pixels ONLY for image files (not PDFs)
-    if mime_type.startswith('image/'):
+    if mime_type.startswith('image/') and mime_type != 'image/svg+xml' and mime_type != 'application/pdf':
         try:
             file.seek(0)  # Reset file pointer again before opening with PIL
             img = Image.open(file)
