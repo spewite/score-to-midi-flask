@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from utils.Exceptions import ScoreQualityError, ScoreStructureError, ScoreTooLargeImageError, MidiNotFound
 from utils.validation import validate_file
 from utils.config import configure_logging
+from utils.email import send_email_notification
 
 # SCRIPTS
 from scripts.image_to_midi import image_to_midi
@@ -101,27 +102,49 @@ def upload_file():
             midi_folder = app.config.get("MIDI_FOLDER")
             midi_dir = join(midi_folder, _uuid)
         
-            return send_from_directory(directory=str(midi_dir), path=midi_file.name, as_attachment=True, download_name=midi_file.name), 200
-        
+            # Send success email notification
+            send_email_notification(
+                subject="[🎵 NEW] File Upload Successful",
+                body=f"The file '{filename}' was uploaded and processed successfully. MIDI file: {midi_file.name}"
+            )
+
+            return send_from_directory(
+                directory=str(midi_dir),
+                path=midi_file.name,
+                as_attachment=True,
+                download_name=midi_file.name
+            ), 200
+
         except MidiNotFound:
+            error_msg = "The server could not find the generated MIDI. Please, try again."
             current_app.logger.error("MidiNotFound exception")
-            return jsonify({'error': "The server could not find the generated MIDI. Please, try again."}), 400
+            send_email_notification("[🎵 ERROR] File Upload Failed", error_msg)
+            return jsonify({'error': error_msg}), 400
 
         except ScoreQualityError:
+            error_msg = "Could not read the score. Please, upload the image with higher quality."
             current_app.logger.error("ScoreQualityError exception")
-            return jsonify({'error': "Could not read the score. Please, upload the image with higher quality."}), 400
+            send_email_notification("[🎵 ERROR] File Upload Failed", error_msg)
+            return jsonify({'error': error_msg}), 400
 
         except ScoreStructureError:
+            error_msg = "Could not parse the score. Please, check if the structure of the score is correct."
             current_app.logger.error("ScoreStructureError exception")
-            return jsonify({'error': "Could not parse the score. Please, check if the structure of the score is correct."}), 400
+            send_email_notification("[🎵 ERROR] File Upload Failed", error_msg)
+            return jsonify({'error': error_msg}), 400
 
         except ScoreTooLargeImageError:
+            error_msg = "The uploaded image was too large. Please, upload a smaller image."
             current_app.logger.error("ScoreTooLargeImageError exception")
-            return jsonify({'error': "The uploaded image was too large. Please, upload a smaller image"}), 400
+            send_email_notification("[🎵 ERROR] File Upload Failed", error_msg)
+            return jsonify({'error': error_msg}), 400
 
         except Exception as exception:
-            current_app.logger.error(f"Genral exception: {exception}")
+            error_msg = f"There has been an unexpected error in the conversion: {exception}"
+            current_app.logger.error(f"General exception: {exception}")
+            send_email_notification("[🎵 ERROR] File Upload Failed", error_msg)
             return jsonify({'error': "There has been an unexpected error in the conversion. Please, try again."}), 500
+
 
 if __name__ == '__main__':
     # Solo para desarrollo
