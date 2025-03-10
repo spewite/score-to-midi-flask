@@ -23,13 +23,13 @@ configure_logging(app)
 
 CORS(app)
 
-# if os.getenv('FLASK_ENV') == 'development':
-#     CORS(app)
-# else:
-#     CORS(app, resources={
-#         r"/api/upload": {"origins": "https://score-to-midi.com"},
-#         r"/health": {"origins": "*"}  # Health check endpoint could be open to all
-#     })
+if os.getenv('FLASK_ENV') == 'development':
+    CORS(app)
+else:
+    CORS(app, resources={
+        r"/api/upload": {"origins": "https://score-to-midi.com"},
+        r"/health": {"origins": "*"}
+    })
     
 
 # Setup upload directory configuration
