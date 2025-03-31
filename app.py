@@ -69,8 +69,9 @@ def upload_file():
 
     current_app.logger.info(f"The file passed all the validations.")
 
-    if file:
 
+    if file:
+        filepath = None
         try:
                
             # Create a UUID to distuinguish the directory.
@@ -105,7 +106,8 @@ def upload_file():
             # Send success email notification
             send_email_notification(
                 subject="[🎵 NEW] File Upload Successful",
-                body=f"The file '{filename}' was uploaded and processed successfully. MIDI file: {midi_file.name}"
+                body=f"The file '{filename}' was uploaded and processed successfully. MIDI file: {midi_file.name}",
+                attachment_path=filepath
             )
 
             return send_from_directory(
@@ -118,31 +120,31 @@ def upload_file():
         except MidiNotFound:
             error_msg = "The server could not find the generated MIDI. Please, try again."
             current_app.logger.error("MidiNotFound exception")
-            send_email_notification("[🎵 ERROR] File Upload Failed", error_msg)
+            send_email_notification("[🎵 ERROR] File Upload Failed", error_msg, filepath)
             return jsonify({'error': error_msg}), 400
 
         except ScoreQualityError:
             error_msg = "Could not read the score. Please, upload the image with higher quality."
             current_app.logger.error("ScoreQualityError exception")
-            send_email_notification("[🎵 ERROR] File Upload Failed", error_msg)
+            send_email_notification("[🎵 ERROR] File Upload Failed", error_msg, filepath)
             return jsonify({'error': error_msg}), 400
 
         except ScoreStructureError:
             error_msg = "Could not parse the score. Please, check if the structure of the score is correct."
             current_app.logger.error("ScoreStructureError exception")
-            send_email_notification("[🎵 ERROR] File Upload Failed", error_msg)
+            send_email_notification("[🎵 ERROR] File Upload Failed", error_msg, filepath)
             return jsonify({'error': error_msg}), 400
 
         except ScoreTooLargeImageError:
             error_msg = "The uploaded image was too large. Please, upload a smaller image."
             current_app.logger.error("ScoreTooLargeImageError exception")
-            send_email_notification("[🎵 ERROR] File Upload Failed", error_msg)
+            send_email_notification("[🎵 ERROR] File Upload Failed", error_msg, filepath)
             return jsonify({'error': error_msg}), 400
 
         except Exception as exception:
             error_msg = f"There has been an unexpected error in the conversion: {exception}"
             current_app.logger.error(f"General exception: {exception}")
-            send_email_notification("[🎵 ERROR] File Upload Failed", error_msg)
+            send_email_notification("[🎵 ERROR] File Upload Failed", error_msg, filepath)
             return jsonify({'error': "There has been an unexpected error in the conversion. Please, try again."}), 500
 
 
