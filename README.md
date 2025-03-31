@@ -50,5 +50,23 @@ pip install -r requirements.txt
 flask --app app.py --debug run
 ```
 
+## Environment Variables
+```bash
+# GENERAL
+FLASK_ENV="development"
+PYTHONUNBUFFERED=1
+
+# DIRECTORIES
+UPLOAD_FOLDER=data/uploads
+MIDI_FOLDER=data/midi
+MXL_FOLDER=data/mxl
+AUDIVERIS_PATH=Audiveris/bin/Audiveris
+AUDIVERIS_OUTPUT=data/audiveris
+
+# EMAILS
+EMAIL_USER="your email (sender)"
+EMAIL_PASS="your email password (sender)"
+MY_PERSONAL_EMAIL="your email (received)"
+```
 
 
