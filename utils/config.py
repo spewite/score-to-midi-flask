@@ -1,8 +1,9 @@
-import logging
+import logging # Import the main logging module
 import os
 import socket
-# Import StreamHandler for console logging
-from logging.handlers import RotatingFileHandler, SysLogHandler, StreamHandler
+# Import specific handlers from logging.handlers
+from logging.handlers import RotatingFileHandler, SysLogHandler
+# StreamHandler is part of the core logging module, not logging.handlers
 
 def configure_logging(app):
     """Configure logging for the Flask application."""
@@ -35,20 +36,20 @@ def configure_logging(app):
         
         # Set up Papertrail logging via SysLogHandler
         papertrail_handler = SysLogHandler(
-            address=('logs6.papertrailapp.com', 23995),
-            socktype=socket.SOCK_DGRAM
+            address=('logs6.papertrailapp.com', 23995), # Replace with your Papertrail address and port
+            socktype=socket.SOCK_DGRAM  # Use SOCK_DGRAM for UDP
         )
         
         # Use a formatter that fits the syslog standard and clearly identifies Flask logs
         papertrail_formatter = logging.Formatter(
-            '%(asctime)s [FLASK] %(levelname)s [%(name)s]: %(message)s',
+            '%(asctime)s [FLASK_APP_NAME] %(levelname)s [%(name)s]: %(message)s', # Consider adding your app name
             datefmt='%b %d %H:%M:%S'
         )
         papertrail_handler.setFormatter(papertrail_formatter)
         papertrail_handler.setLevel(logging.INFO)
 
         # Set up console logging
-        console_handler = StreamHandler()
+        console_handler = logging.StreamHandler() # Use logging.StreamHandler()
         # You can use a similar formatter or a simpler one for the console
         console_formatter = logging.Formatter(
             '%(asctime)s %(levelname)s [%(name)s] [trace_id=%(trace_id)s] - %(message)s'
