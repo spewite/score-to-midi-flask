@@ -69,4 +69,5 @@ EMAIL_PASS="your email password (sender)"
 MY_PERSONAL_EMAIL="your email (received)"
 ```
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/X8X11EXQLW)
 
