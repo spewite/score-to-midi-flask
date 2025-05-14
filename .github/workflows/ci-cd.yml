@@ -37,6 +37,28 @@ jobs:
         script: |
           cd ~/score-to-midi-flask
           git pull
+          
+          # Asumiendo que el archivo nginx.conf está en la raíz de tu repo
+          # y el enlace simbólico ya está creado como discutimos.
+          # Si el archivo nginx.conf en el repo cambió, el enlace simbólico
+          # ya apuntará a la nueva versión después del git pull.
+          
+          echo "Verificando configuración de Nginx..."
+          sudo nginx -t
+          
+          echo "Recargando Nginx si la configuración es válida..."
+          # Solo recargar si la configuración es válida
+          if sudo nginx -t; then
+            sudo systemctl reload nginx
+            echo "Nginx recargado."
+          else
+            echo "Error en la configuración de Nginx. No se recargó Nginx."
+            # Podrías querer que el pipeline falle aquí si la config de Nginx es mala
+            # exit 1 
+          fi
+          
+          echo "Desplegando aplicación Docker..."
           docker compose down --rmi all
           docker compose build --no-cache
           docker compose up -d
+          echo "Aplicación Docker desplegada."
