@@ -30,7 +30,7 @@ def mxl_to_midi(mxl_path, _uuid):
     raise FileNotFoundError(f'{mxl_path} does not exist.')
 
   # Load the XML file
-  current_app.logger.info("Parsing the MXL file: ", mxl_path)
+  current_app.logger.info(f"Parsing the MXL file: {mxl_path}")
   score = converter.parse(mxl_path)
 
   # Save the MIDI file
@@ -39,6 +39,6 @@ def mxl_to_midi(mxl_path, _uuid):
   midi_file_path = join(midi_output_dir, f'{mxl_filename_base}.midi')
   score.write('midi', fp=midi_file_path)
     
-  current_app.logger.info("Midi file saved in: ", midi_file_path)
+  current_app.logger.info(f"Midi file saved in: {midi_file_path}")
   current_app.logger.info("Finished mxl_to_midi() successfully...")
   return midi_file_path
