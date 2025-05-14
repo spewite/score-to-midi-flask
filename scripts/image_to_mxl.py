@@ -68,7 +68,7 @@ def image_to_mxl(image_path, _uuid):
     
     if result.returncode != 0:
         current_app.logger.error("Command failed!")
-        current_app.logger.error("Return code:", result.returncode)
+        current_app.logger.error(f"Return code: {result.returncode}")
         current_app.logger.error(result.stdout)
 
     checkCorrectExport(result.stdout)
@@ -82,7 +82,7 @@ def image_to_mxl(image_path, _uuid):
         final_mxl_path = join(mxl_output_dir, f"{filename}.mxl")
         shutil.copy(audiveris_mxl_path, final_mxl_path)
 
-        current_app.logger.info("MXL file saved correctly in:",  final_mxl_path)
+        current_app.logger.info(f"MXL file saved correctly in: {final_mxl_path}")
         current_app.logger.info("Finished image_to_mxl() successfully...") 
             
         return final_mxl_path
