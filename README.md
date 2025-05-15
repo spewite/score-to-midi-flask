@@ -64,9 +64,9 @@ AUDIVERIS_PATH=Audiveris/bin/Audiveris
 AUDIVERIS_OUTPUT=data/audiveris
 
 # EMAILS
-EMAIL_USER="your email (sender)"
-EMAIL_PASS="your email password (sender)"
-MY_PERSONAL_EMAIL="your email (received)"
+BREVO_SENDER_EMAIL=brevo email (sender)
+MY_PERSONAL_EMAIL=receiver email
+BREVO_API_KEY=brevo API key
 ```
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/X8X11EXQLW)
