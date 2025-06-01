@@ -110,12 +110,14 @@ def upload_file():
                 attachment_path=filepath
             )
 
-            return send_from_directory(
-                directory=str(midi_dir),
-                path=midi_file.name,
-                as_attachment=True,
-                download_name=midi_file.name
-            ), 200
+            # Build the download URL for the MIDI file
+            midi_url = f"{request.host_url.rstrip('/')}/api/download/{_uuid}"
+            return jsonify({
+                "file_uuid": _uuid,
+                "midi_url": midi_url,
+                "original_filename": filename,
+                "midi_filename": midi_file.name
+            }), 200
 
         except MidiNotFound:
             error_msg = "The server could not find the generated MIDI. Please, try again."
@@ -147,6 +149,27 @@ def upload_file():
             send_email_notification("[🎵 ERROR] File Upload Failed", error_msg, filepath)
             return jsonify({'error': "There has been an unexpected error in the conversion. Please, try again."}), 500
 
+
+@app.route('/api/download/<uuid>', methods=['GET'])
+def download_midi(uuid):
+    """
+    Download the MIDI file for a given UUID as an attachment.
+    """
+    midi_folder = app.config.get("MIDI_FOLDER")
+    midi_dir = join(midi_folder, uuid)
+    # Find the MIDI file in the directory
+    if not os.path.exists(midi_dir):
+        return jsonify({'error': 'MIDI file not found.'}), 404
+    midi_files = [f for f in os.listdir(midi_dir) if f.lower().endswith('.mid') or f.lower().endswith('.midi')]
+    if not midi_files:
+        return jsonify({'error': 'MIDI file not found.'}), 404
+    midi_file = midi_files[0]  # Assume only one MIDI per upload
+    return send_from_directory(
+        directory=midi_dir,
+        path=midi_file,
+        as_attachment=True,
+        download_name=midi_file
+    )
 
 if __name__ == '__main__':
     # Solo para desarrollo
