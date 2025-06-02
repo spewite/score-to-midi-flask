@@ -10,6 +10,7 @@ from utils.Exceptions import ScoreQualityError, ScoreStructureError, ScoreTooLar
 from utils.validation import validate_file
 from utils.config import configure_logging
 from utils.email import send_email_notification
+from utils.validation import ALLOWED_EXTENSIONS
 
 # SCRIPTS
 from scripts.image_to_midi import image_to_midi
@@ -171,6 +172,27 @@ def download_midi(uuid):
         path=midi_file,
         as_attachment=True,
         download_name=midi_file
+    )
+
+@app.route('/api/score/<uuid>', methods=['GET'])
+def download_score(uuid):
+    """
+    Download the score file for a given UUID as an attachment.
+    """
+    score_folder = app.config.get("UPLOAD_FOLDER")
+    score_dir = join(score_folder, uuid)
+    # Find the score file in the directory
+    if not os.path.exists(score_dir):
+        return jsonify({'error': 'Score file not found.'}), 404
+    score_files = [f for f in os.listdir(score_dir) if f.lower().endswith(tuple(ALLOWED_EXTENSIONS))]
+    if not score_files:
+        return jsonify({'error': 'Score file not found.'}), 404
+    score_file = score_files[0]  # Assume only one score per upload
+    return send_from_directory(
+        directory=score_dir,
+        path=score_file,
+        as_attachment=True,
+        download_name=score_file
     )
 
 if __name__ == '__main__':
