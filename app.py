@@ -112,9 +112,11 @@ def upload_file():
 
             # Build the download URL for the MIDI file
             midi_url = f"{request.host_url.rstrip('/')}/api/download/{_uuid}"
+            score_url = f"{request.host_url.rstrip('/')}/api/score/{_uuid}"
             return jsonify({
                 "file_uuid": _uuid,
                 "midi_url": midi_url,
+                "score_url": score_url,
                 "original_filename": filename,
                 "midi_filename": midi_file.name
             }), 200
