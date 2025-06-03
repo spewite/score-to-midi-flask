@@ -23,8 +23,6 @@ app = Flask(__name__)
 # Configure logging
 configure_logging(app)
 
-CORS(app)
-
 if os.getenv('FLASK_ENV') == 'development':
     CORS(app)
 else:
