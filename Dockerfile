@@ -17,10 +17,14 @@ ENV PATH="$JAVA_HOME/bin:$PATH"
 # Crear carpeta de trabajo
 WORKDIR /app
 
+# Crear el entorno virtual
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
 # Copiamos el requirements.txt primero (mejora caché de Docker)
 COPY requirements.txt .
 
-# Instalamos dependencias Python
+# Instalamos dependencias Python en el venv
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
