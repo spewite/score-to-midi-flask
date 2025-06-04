@@ -74,9 +74,8 @@ jobs:
         key: ${{ secrets.DO_SSH_KEY }}
         port: ${{ secrets.DO_PORT }}
         script: |
-          echo "ls -la"
           echo "--- Starting Staging Deployment ---"
-          cd "~/score-to-midi-flask-staging"
+          cd ~/score-to-midi-flask-staging
           echo "Pulling latest changes in staging branch..."
           git checkout staging
           git pull origin staging
