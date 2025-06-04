@@ -2,17 +2,21 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: 
+      - main
+      - staging
 
 jobs:
+
   build-and-test:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v4
     
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.12'
         
@@ -20,45 +24,84 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        
-  deploy:
+   
+  deploy-production:  
     needs: build-and-test
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Deploy to DigitalOcean
-      uses: appleboy/ssh-action@master
+    - name: Deploy to Production (DigitalOcean)
+      uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.DO_HOST }}
         username: ${{ secrets.DO_USERNAME }}
         key: ${{ secrets.DO_SSH_KEY }}
         port: ${{ secrets.DO_PORT }}
         script: |
+          echo "--- Starting Production Deployment ---"
           cd ~/score-to-midi-flask
-          git pull
-          
-          # Asumiendo que el archivo nginx.conf está en la raíz de tu repo
-          # y el enlace simbólico ya está creado como discutimos.
-          # Si el archivo nginx.conf en el repo cambió, el enlace simbólico
-          # ya apuntará a la nueva versión después del git pull.
-          
-          echo "Verificando configuración de Nginx..."
-          sudo nginx -t
-          
-          echo "Recargando Nginx si la configuración es válida..."
-          # Solo recargar si la configuración es válida
+          echo "Activating main branch and pulling latest changes..."
+          git checkout main
+          git pull origin main
+
+          echo "Verifying Nginx configuration (Production)..."
           if sudo nginx -t; then
+            echo "Nginx configuration is valid. Reloading Nginx..."
             sudo systemctl reload nginx
-            echo "Nginx recargado."
+            echo "Nginx reloaded for Production."
           else
-            echo "Error en la configuración de Nginx. No se recargó Nginx."
-            # Podrías querer que el pipeline falle aquí si la config de Nginx es mala
-            # exit 1 
+            echo "ERROR: Invalid Nginx configuration (Production). Deployment aborted."
+            exit 1 
           fi
           
-          echo "Desplegando aplicación Docker..."
-          docker compose down --rmi all
+          echo "Deploying Docker application (Production)..."
+          docker compose down --rmi local
           docker compose build --no-cache
           docker compose up -d
-          echo "Aplicación Docker desplegada."
+          echo "Production Docker application deployed."
+          echo "--- Production Deployment Finished ---"
+
+  deploy-staging:
+    needs: build-and-test
+    if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
+    runs-on: ubuntu-latest    
+    steps:
+    - name: Deploy to Staging (DigitalOcean)
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.DO_HOST }}
+        username: ${{ secrets.DO_USERNAME }}
+        key: ${{ secrets.DO_SSH_KEY }}
+        port: ${{ secrets.DO_PORT }}
+        script: |
+          echo "--- Starting Staging Deployment ---"
+          cd "~/score-to-midi-flask-staging"
+          git checkout staging
+          git fetch origin
+          git reset --hard origin/staging
+
+          echo "Verifying Nginx configuration (Staging)..."
+          if sudo nginx -t; then
+            echo "Nginx configuration is valid. Reloading Nginx..."
+            sudo systemctl reload nginx
+            echo "Nginx reloaded."
+          else
+            echo "ERROR: Invalid Nginx configuration (Staging). Deployment aborted."
+            exit 1
+          fi
+          
+          echo "Deploying Docker application (Staging)..."
+          STAGING_COMPOSE_FILE="docker-compose.staging.yml"
+
+          echo "Staging uses the same enviroment variables as production"
+          if [ -f "$STAGING_COMPOSE_FILE" ]; then
+            echo "Using $STAGING_COMPOSE_FILE for staging..."
+            docker compose -f "$STAGING_COMPOSE_FILE" down --rmi local
+            docker compose -f "$STAGING_COMPOSE_FILE" build --no-cache
+            docker compose -f "$STAGING_COMPOSE_FILE" up -d
+            echo "Staging Docker application deployed using $STAGING_COMPOSE_FILE."
+          else
+            echo "ERROR: $STAGING_COMPOSE_FILE not found! Staging deployment cannot proceed."
+            exit 1
+          fi
+          echo "--- Staging Deployment Finished ---"
