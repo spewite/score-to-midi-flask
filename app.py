@@ -27,20 +27,20 @@ if os.getenv('FLASK_ENV') == 'development':
     CORS(app)
 else:
     CORS(app, resources={
-
-        # Production
-        r"/api/upload": {"origins": "https://score-to-midi.com"},
-        r"/api/download": {"origins": "https://score-to-midi.com"},
-        r"/api/score": {"origins": "https://score-to-midi.com"},
-
-        # Staging
-        r"/api/upload": {"origins": "https://staging.score-to-midi.com"},
-        r"/api/download": {"origins": "https://staging.score-to-midi.com"},
-        r"/api/score": {"origins": "https://staging.score-to-midi.com"},
-
-        # Health
+        r"/api/upload": {"origins": [
+            "https://score-to-midi.com",
+            "https://staging.score-to-midi.com"
+        ]},
+        r"/api/download": {"origins": [
+            "https://score-to-midi.com",
+            "https://staging.score-to-midi.com"
+        ]},
+        r"/api/score": {"origins": [
+            "https://score-to-midi.com",
+            "https://staging.score-to-midi.com"
+        ]},
         r"/health": {"origins": "*"}
-    })
+})
     
 
 # Setup upload directory configuration
@@ -124,13 +124,19 @@ def upload_file():
         # Build the download URL for the MIDI file
         midi_url = f"{request.host_url.rstrip('/')}/api/download/{_uuid}"
         score_url = f"{request.host_url.rstrip('/')}/api/score/{_uuid}"
-        return jsonify({
+
+        response = jsonify({
             "file_uuid": _uuid,
             "midi_url": midi_url,
             "score_url": score_url,
             "original_filename": filename,
             "midi_filename": midi_file.name
         }), 200
+
+        current_app.logger.info("Returning response: ")
+        current_app.logger.info(response)
+
+        return response
 
     except MidiNotFound:
         error_msg = "The server could not find the generated MIDI. Please, try again."

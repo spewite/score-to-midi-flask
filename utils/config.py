@@ -23,18 +23,31 @@ def configure_logging(app):
             backupCount=10
         )
         
-        file_formatter = logging.Formatter(
-            '%(asctime)s %(levelname)s [%(name)s] [%(module)s:%(lineno)d] [trace_id=%(trace_id)s] - %(message)s'
-        )
+        # Set up console logging (with color if possible)
+        try:
+            import colorlog
+            color_formatter = colorlog.ColoredFormatter(
+                '%(log_color)s%(levelname)s:%(reset)s %(message)s',
+                log_colors={
+                    'DEBUG': 'cyan',
+                    'INFO': 'green',
+                    'WARNING': 'yellow',
+                    'ERROR': 'red',
+                    'CRITICAL': 'bold_red',
+                }
+            )
+            console_handler = colorlog.StreamHandler()
+            console_handler.setFormatter(color_formatter)
+        except ImportError:
+            console_handler = logging.StreamHandler()
+            simple_formatter = logging.Formatter('%(levelname)s: %(message)s')
+            console_handler.setFormatter(simple_formatter)
+
+        # File handler: simple format, no color
+        file_formatter = logging.Formatter('%(levelname)s: %(message)s')
         file_handler.setFormatter(file_formatter)
+
         file_handler.setLevel(logging.INFO)
-        
-        # Set up console logging
-        console_handler = logging.StreamHandler()
-        console_formatter = logging.Formatter(
-            '%(asctime)s %(levelname)s [%(name)s] [%(module)s:%(lineno)d] [trace_id=%(trace_id)s] - %(message)s'
-        )
-        console_handler.setFormatter(console_formatter)
         console_handler.setLevel(logging.INFO)
         
         class TraceIDFilter(logging.Filter):
@@ -66,7 +79,7 @@ def configure_logging(app):
                 logger.addHandler(console_handler)
                 logger.setLevel(logging.INFO)
         
-        app.logger.info('Application logging configured with file and console output.') # Updated message
+        app.logger.info('Application logging configured: simple level+message, color for console.') # Updated message
     
     except Exception as e:
         import sys
