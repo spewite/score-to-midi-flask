@@ -146,12 +146,14 @@ def send_email_notification(subject, body, attachment_path=None):
     if not os.getenv('BREVO_API_KEY'):
         current_app.logger.warning("BREVO_API_KEY not found, skipping email notification.")
         return
-        
-    app_context = current_app.app_context()
-    # El argumento 'body' se pasa como 'html_content_body' a la función síncrona
-    # 'attachment_path' se pasa como 'attachment_path_original'
-    thread = threading.Thread(target=_send_email_via_brevo_sync, args=(app_context, subject, body, attachment_path))
-    thread.daemon = True
-    thread.start()
-    current_app.logger.info("Brevo email sending task initiated in a background thread.")
-
+    
+    try:
+        app_context = current_app.app_context()
+        # El argumento 'body' se pasa como 'html_content_body' a la función síncrona
+        # 'attachment_path' se pasa como 'attachment_path_original'
+        thread = threading.Thread(target=_send_email_via_brevo_sync, args=(app_context, subject, body, attachment_path))
+        thread.daemon = True
+        thread.start()
+        current_app.logger.info("Brevo email sending task initiated in a background thread.")
+    except Exception as e:
+        current_app.logger.error(f"An error occurred when attempting to send email via Brevo in a separate thread: {e}")

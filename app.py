@@ -27,7 +27,18 @@ if os.getenv('FLASK_ENV') == 'development':
     CORS(app)
 else:
     CORS(app, resources={
+
+        # Production
         r"/api/upload": {"origins": "https://score-to-midi.com"},
+        r"/api/download": {"origins": "https://score-to-midi.com"},
+        r"/api/score": {"origins": "https://score-to-midi.com"},
+
+        # Staging
+        r"/api/upload": {"origins": "https://staging.score-to-midi.com"},
+        r"/api/download": {"origins": "https://staging.score-to-midi.com"},
+        r"/api/score": {"origins": "https://staging.score-to-midi.com"},
+
+        # Health
         r"/health": {"origins": "*"}
     })
     
@@ -68,87 +79,88 @@ def upload_file():
 
     current_app.logger.info(f"The file passed all the validations.")
 
+    if not file:
+        return jsonify({'error': 'No file found in the request. Please, try again.'}), 400
 
-    if file:
-        filepath = None
-        try:
+    filepath = None
+    try:
                
-            # Create a UUID to distuinguish the directory.
-            _uuid = str(uuid.uuid4())
+        # Create a UUID to distuinguish the directory.
+        _uuid = str(uuid.uuid4())
 
-            # Create the directory to store the image
-            file_dir = join(app.config['UPLOAD_FOLDER'], _uuid)
+        # Create the directory to store the image
+        file_dir = join(app.config['UPLOAD_FOLDER'], _uuid)
 
-            if not os.path.exists(file_dir):
-                os.makedirs(file_dir)
+        if not os.path.exists(file_dir):
+            os.makedirs(file_dir)
 
-            # Get the file attributes
-            filename = secure_filename(file.filename)
-            filepath = join(file_dir, filename)
-            
-            # Save the file in its corresponding directory.
-            file.save(filepath)
-            current_app.logger.info(f"File saved: {filepath}")
-
-            # Convert image into MIDI
-            midi_path = image_to_midi(filepath, _uuid)
-            midi_file = Path(midi_path)
-
-            # Validate if the MIDI exists
-            if not midi_file.exists():
-                raise 
-
-            # Get the midi files path MIDI
-            midi_folder = app.config.get("MIDI_FOLDER")
-            midi_dir = join(midi_folder, _uuid)
+        # Get the file attributes
+        filename = secure_filename(file.filename)
+        filepath = join(file_dir, filename)
         
-            # Send success email notification
-            send_email_notification(
-                subject="[🎵 NEW] File Upload Successful",
-                body=f"The file '{filename}' was uploaded and processed successfully. MIDI file: {midi_file.name}",
-                attachment_path=filepath
-            )
+        # Save the file in its corresponding directory.
+        file.save(filepath)
+        current_app.logger.info(f"File saved: {filepath}")
 
-            # Build the download URL for the MIDI file
-            midi_url = f"{request.host_url.rstrip('/')}/api/download/{_uuid}"
-            score_url = f"{request.host_url.rstrip('/')}/api/score/{_uuid}"
-            return jsonify({
-                "file_uuid": _uuid,
-                "midi_url": midi_url,
-                "score_url": score_url,
-                "original_filename": filename,
-                "midi_filename": midi_file.name
-            }), 200
+        # Convert image into MIDI
+        midi_path = image_to_midi(filepath, _uuid)
+        midi_file = Path(midi_path)
 
-        except MidiNotFound:
-            error_msg = "The server could not find the generated MIDI. Please, try again."
-            current_app.logger.error("MidiNotFound exception")
-            send_email_notification("[🎵 ERROR] File Upload Failed", error_msg, filepath)
-            return jsonify({'error': error_msg}), 400
+        # Validate if the MIDI exists
+        if not midi_file.exists():
+            raise 
 
-        except ScoreQualityError:
-            error_msg = "Could not read the score. Please, upload the image with higher quality."
-            current_app.logger.error("ScoreQualityError exception")
-            send_email_notification("[🎵 ERROR] File Upload Failed", error_msg, filepath)
-            return jsonify({'error': error_msg}), 400
+        # Get the midi files path MIDI
+        midi_folder = app.config.get("MIDI_FOLDER")
+        midi_dir = join(midi_folder, _uuid)
+    
+        # Send success email notification
+        send_email_notification(
+            subject="[🎵 NEW] File Upload Successful",
+            body=f"The file '{filename}' was uploaded and processed successfully. MIDI file: {midi_file.name}",
+            attachment_path=filepath
+        )
 
-        except ScoreStructureError:
-            error_msg = "Could not parse the score. Please, check if the structure of the score is correct."
-            current_app.logger.error("ScoreStructureError exception")
-            send_email_notification("[🎵 ERROR] File Upload Failed", error_msg, filepath)
-            return jsonify({'error': error_msg}), 400
+        # Build the download URL for the MIDI file
+        midi_url = f"{request.host_url.rstrip('/')}/api/download/{_uuid}"
+        score_url = f"{request.host_url.rstrip('/')}/api/score/{_uuid}"
+        return jsonify({
+            "file_uuid": _uuid,
+            "midi_url": midi_url,
+            "score_url": score_url,
+            "original_filename": filename,
+            "midi_filename": midi_file.name
+        }), 200
 
-        except ScoreTooLargeImageError:
-            error_msg = "The uploaded image was too large. Please, upload a smaller image."
-            current_app.logger.error("ScoreTooLargeImageError exception")
-            send_email_notification("[🎵 ERROR] File Upload Failed", error_msg, filepath)
-            return jsonify({'error': error_msg}), 400
+    except MidiNotFound:
+        error_msg = "The server could not find the generated MIDI. Please, try again."
+        current_app.logger.error("MidiNotFound exception")
+        send_email_notification("[🎵 ERROR] File Upload Failed", error_msg, filepath)
+        return jsonify({'error': error_msg}), 400
 
-        except Exception as exception:
-            error_msg = f"There has been an unexpected error in the conversion: {exception}"
-            current_app.logger.error(f"General exception: {exception}")
-            send_email_notification("[🎵 ERROR] File Upload Failed", error_msg, filepath)
-            return jsonify({'error': "There has been an unexpected error in the conversion. Please, try again."}), 500
+    except ScoreQualityError:
+        error_msg = "Could not read the score. Please, upload the image with higher quality."
+        current_app.logger.error("ScoreQualityError exception")
+        send_email_notification("[🎵 ERROR] File Upload Failed", error_msg, filepath)
+        return jsonify({'error': error_msg}), 400
+
+    except ScoreStructureError:
+        error_msg = "Could not parse the score. Please, check if the structure of the score is correct."
+        current_app.logger.error("ScoreStructureError exception")
+        send_email_notification("[🎵 ERROR] File Upload Failed", error_msg, filepath)
+        return jsonify({'error': error_msg}), 400
+
+    except ScoreTooLargeImageError:
+        error_msg = "The uploaded image was too large. Please, upload a smaller image."
+        current_app.logger.error("ScoreTooLargeImageError exception")
+        send_email_notification("[🎵 ERROR] File Upload Failed", error_msg, filepath)
+        return jsonify({'error': error_msg}), 400
+
+    except Exception as exception:
+        error_msg = f"There has been an unexpected error in the conversion: {exception}"
+        current_app.logger.error(f"General exception: {exception}")
+        send_email_notification("[🎵 ERROR] File Upload Failed", error_msg, filepath)
+        return jsonify({'error': "There has been an unexpected error in the conversion. Please, try again."}), 500
 
 
 @app.route('/api/download/<uuid>', methods=['GET'])
