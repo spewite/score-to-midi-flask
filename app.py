@@ -3,6 +3,7 @@ import os
 from os.path import join
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
+from werkzeug.middleware.proxy_fix import ProxyFix
 import uuid
 from pathlib import Path
 from dotenv import load_dotenv
@@ -11,6 +12,7 @@ from utils.validation import validate_file
 from utils.config import configure_logging
 from utils.email import send_email_notification
 from utils.validation import ALLOWED_EXTENSIONS
+import json
 
 # SCRIPTS
 from scripts.image_to_midi import image_to_midi
@@ -19,6 +21,7 @@ from scripts.image_to_midi import image_to_midi
 load_dotenv()
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1) # Configure https
 
 # Configure logging
 configure_logging(app)
