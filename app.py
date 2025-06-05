@@ -125,6 +125,9 @@ def upload_file():
         midi_url = f"{request.host_url.rstrip('/')}/api/download/{_uuid}"
         score_url = f"{request.host_url.rstrip('/')}/api/score/{_uuid}"
 
+        current_app.logger.info("midi_url: %s", midi_url)
+        current_app.logger.info("score_url: %s", score_url)
+
         response_dict = {
             "file_uuid": _uuid,
             "midi_url": midi_url,
@@ -133,8 +136,7 @@ def upload_file():
             "midi_filename": midi_file.name
         }
 
-        current_app.logger.info("Returning response: ")
-        current_app.logger.info(response_dict)
+        current_app.logger.info("Returning response: \n%s", json.dumps(response_dict, indent=4))
 
         return jsonify(response_dict), 200
 
