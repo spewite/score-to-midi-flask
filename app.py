@@ -179,15 +179,26 @@ def download_midi(uuid):
     """
     Download the MIDI file for a given UUID as an attachment.
     """
+
+    current_app.logger.info("Downloading MIDI file for UUID: %s", uuid)
     midi_folder = app.config.get("MIDI_FOLDER")
     midi_dir = join(midi_folder, uuid)
+
     # Find the MIDI file in the directory
     if not os.path.exists(midi_dir):
+        current_app.logger.warning("MIDI directory not found for UUID: %s", uuid)
         return jsonify({'error': 'MIDI file not found.'}), 404
+
     midi_files = [f for f in os.listdir(midi_dir) if f.lower().endswith('.mid') or f.lower().endswith('.midi')]
+
     if not midi_files:
+        current_app.logger.warning("No MIDI files found in directory: %s (UUID: %s)", midi_dir, uuid)
         return jsonify({'error': 'MIDI file not found.'}), 404
+    
     midi_file = midi_files[0]  # Assume only one MIDI per upload
+
+    current_app.logger.info("Returning MIDI file: %s from directory: %s", midi_file, midi_dir)
+    
     return send_from_directory(
         directory=midi_dir,
         path=midi_file,
