@@ -29,8 +29,8 @@ def configure_logging(app):
             color_formatter = colorlog.ColoredFormatter(
                 '%(log_color)s%(levelname)s:%(reset)s %(message)s',
                 log_colors={
-                    'DEBUG': 'cyan',
-                    'INFO': 'green',
+                    'DEBUG': 'blue',
+                    'INFO': 'cyan',
                     'WARNING': 'yellow',
                     'ERROR': 'red',
                     'CRITICAL': 'bold_red',
@@ -64,6 +64,8 @@ def configure_logging(app):
         app.logger.addHandler(file_handler)
         app.logger.addHandler(console_handler)
         app.logger.setLevel(logging.INFO)
+        app.logger.addFilter(TraceIDFilter())
+        app.logger.propagate = False
         
         werkzeug_logger = logging.getLogger('werkzeug')
         werkzeug_logger.handlers = []
@@ -78,9 +80,8 @@ def configure_logging(app):
                 logger.addHandler(file_handler)
                 logger.addHandler(console_handler)
                 logger.setLevel(logging.INFO)
+            logger.propagate = False
         
-        app.logger.info('Application logging configured: simple level+message, color for console.') # Updated message
-    
     except Exception as e:
         import sys
         print(f"Critical error setting up logging configuration: {e}", file=sys.stderr)

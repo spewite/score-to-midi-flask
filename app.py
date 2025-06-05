@@ -125,18 +125,18 @@ def upload_file():
         midi_url = f"{request.host_url.rstrip('/')}/api/download/{_uuid}"
         score_url = f"{request.host_url.rstrip('/')}/api/score/{_uuid}"
 
-        response = jsonify({
+        response_dict = {
             "file_uuid": _uuid,
             "midi_url": midi_url,
             "score_url": score_url,
             "original_filename": filename,
             "midi_filename": midi_file.name
-        }), 200
+        }
 
         current_app.logger.info("Returning response: ")
-        current_app.logger.info(response)
+        current_app.logger.info(response_dict)
 
-        return response
+        return jsonify(response_dict), 200
 
     except MidiNotFound:
         error_msg = "The server could not find the generated MIDI. Please, try again."
