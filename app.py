@@ -2,7 +2,7 @@ from flask import Flask, current_app, request, jsonify, send_from_directory
 import os
 from os.path import join
 from werkzeug.utils import secure_filename
-
+from flask_cors import CORS
 from werkzeug.middleware.proxy_fix import ProxyFix
 import uuid
 from pathlib import Path
@@ -22,6 +22,11 @@ load_dotenv()
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1) # Configure https
+
+# Check if FLASK_ENV is set to "development"
+if os.environ.get("FLASK_ENV") == "development":
+    # Allow all CORS headers and origins
+    CORS(app)
 
 # Configure logging
 configure_logging(app)
