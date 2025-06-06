@@ -1,11 +1,11 @@
 services:
   flask:
-    container_name: score-to-midi-production
+    container_name: score-to-midi-staging
     build: .
     ports:
-      - "5000:5000"
+      - "5050:5000"
     env_file:
       - .env
     restart: always  # Restart in case of error.
     volumes:
-    - ./logs:/var/log/gunicorn  # Volumen para logs en el host
+    - ./logs:/var/log/gunicorn_staging  # Volumen para logs en el host

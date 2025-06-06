@@ -23,8 +23,7 @@ logconfig_dict = {
     'disable_existing_loggers': False, # Set to False to not disable other loggers like Flask's
     'formatters': {
         'console_formatter': { # Renamed for clarity
-            'format': '%(asctime)s [GUNICORN] %(levelname)s [%(process)d]: %(message)s',
-            'datefmt': '%b %d %H:%M:%S',
+            'format': '%(levelname)s: %(message)s',
         },
     },
     'handlers': {
