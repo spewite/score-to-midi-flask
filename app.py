@@ -215,10 +215,19 @@ def download_midi(uuid):
         download_name=midi_file
     )
 
+@cross_origin(
+    origins=[
+        "https://staging.score-to-midi.com",
+        "https://score-to-midi.com",
+        "http://localhost:3000"
+    ],
+    methods=["GET"],
+    expose_headers=["Content-Disposition"]
+)
 @app.route('/api/score/<uuid>', methods=['GET'])
 def download_score(uuid):
     """
-    Download the score file for a given UUID as an attachment.
+    Download the score file for a given UUID to be displayed inline (not as attachment).
     """
     score_folder = app.config.get("UPLOAD_FOLDER")
     score_dir = join(score_folder, uuid)
@@ -232,7 +241,7 @@ def download_score(uuid):
     return send_from_directory(
         directory=score_dir,
         path=score_file,
-        as_attachment=True,
+        as_attachment=False,  # Mostrar en navegador, no descargar
         download_name=score_file
     )
 
