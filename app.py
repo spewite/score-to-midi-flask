@@ -16,6 +16,7 @@ import json
 
 # SCRIPTS
 from scripts.image_to_midi import image_to_midi
+from scripts.cleanup_data import cleanup_directory
 
 # Load environment variables
 load_dotenv()
@@ -125,6 +126,12 @@ def upload_file():
         }
 
         current_app.logger.info("Returning response: \n%s", json.dumps(response_dict, indent=4))
+
+        # Vaciar carpetas data/audiveris y data/mxl
+        audiveris_dir = current_app.config.get("AUDIVERIS_OUTPUT")
+        mxl_dir = current_app.config.get("MXL_FOLDER")
+        cleanup_directory(audiveris_dir)
+        cleanup_directory(mxl_dir)
 
         return jsonify(response_dict), 200
 
