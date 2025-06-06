@@ -64,47 +64,47 @@ jobs:
           echo "Production Docker application deployed."
           echo "--- Production Deployment Finished ---"
 
-  # deploy-staging:
-  #   needs: build-and-test
-  #   if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
-  #   runs-on: ubuntu-latest    
-  #   steps:
-  #   - name: Deploy to Staging (DigitalOcean)
-  #     uses: appleboy/ssh-action@v1.0.3
-  #     with:
-  #       host: ${{ secrets.DO_HOST }}
-  #       username: ${{ secrets.DO_USERNAME }}
-  #       key: ${{ secrets.DO_SSH_KEY }}
-  #       port: ${{ secrets.DO_PORT }}
-  #       script: |
-  #         echo "--- Starting Staging Deployment ---"
-  #         cd ~/score-to-midi-flask-staging
-  #         echo "Pulling latest changes in staging branch..."
-  #         git checkout staging
-  #         git pull origin staging
+  deploy-staging:
+    needs: build-and-test
+    if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
+    runs-on: ubuntu-latest    
+    steps:
+    - name: Deploy to Staging (DigitalOcean)
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.DO_HOST }}
+        username: ${{ secrets.DO_USERNAME }}
+        key: ${{ secrets.DO_SSH_KEY }}
+        port: ${{ secrets.DO_PORT }}
+        script: |
+          echo "--- Starting Staging Deployment ---"
+          cd ~/score-to-midi-flask-staging
+          echo "Pulling latest changes in staging branch..."
+          git checkout staging
+          git pull origin staging
 
-  #         echo "Verifying Nginx configuration (Staging)..."
-  #         if sudo nginx -t; then
-  #           echo "Nginx configuration is valid. Reloading Nginx..."
-  #           sudo systemctl reload nginx
-  #           echo "Nginx reloaded."
-  #         else
-  #           echo "ERROR: Invalid Nginx configuration (Staging). Deployment aborted."
-  #           exit 1
-  #         fi
+          echo "Verifying Nginx configuration (Staging)..."
+          if sudo nginx -t; then
+            echo "Nginx configuration is valid. Reloading Nginx..."
+            sudo systemctl reload nginx
+            echo "Nginx reloaded."
+          else
+            echo "ERROR: Invalid Nginx configuration (Staging). Deployment aborted."
+            exit 1
+          fi
           
-  #         echo "Deploying Docker application (Staging)..."
-  #         STAGING_COMPOSE_FILE="docker-compose.staging.yml"
+          echo "Deploying Docker application (Staging)..."
+          STAGING_COMPOSE_FILE="docker-compose.staging.yml"
 
-  #         echo "Staging uses the same enviroment variables as production"
-  #         if [ -f "$STAGING_COMPOSE_FILE" ]; then
-  #           echo "Using $STAGING_COMPOSE_FILE for staging..."
-  #           docker compose -f "$STAGING_COMPOSE_FILE" down --rmi local
-  #           docker compose -f "$STAGING_COMPOSE_FILE" build --no-cache
-  #           docker compose -f "$STAGING_COMPOSE_FILE" up -d
-  #           echo "Staging Docker application deployed using $STAGING_COMPOSE_FILE."
-  #         else
-  #           echo "ERROR: $STAGING_COMPOSE_FILE not found! Staging deployment cannot proceed."
-  #           exit 1
-  #         fi
-  #         echo "--- Staging Deployment Finished ---"
+          echo "Staging uses the same enviroment variables as production"
+          if [ -f "$STAGING_COMPOSE_FILE" ]; then
+            echo "Using $STAGING_COMPOSE_FILE for staging..."
+            docker compose -f "$STAGING_COMPOSE_FILE" down --rmi local
+            docker compose -f "$STAGING_COMPOSE_FILE" build --no-cache
+            docker compose -f "$STAGING_COMPOSE_FILE" up -d
+            echo "Staging Docker application deployed using $STAGING_COMPOSE_FILE."
+          else
+            echo "ERROR: $STAGING_COMPOSE_FILE not found! Staging deployment cannot proceed."
+            exit 1
+          fi
+          echo "--- Staging Deployment Finished ---"
