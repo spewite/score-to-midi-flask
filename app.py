@@ -174,7 +174,16 @@ def upload_file():
         return jsonify({'error': "There has been an unexpected error in the conversion. Please, try again."}), 500
 
 
-@app.route('/api/download/<uuid>', methods=['GET'])
+@cross_origin(
+    origins=[
+        "https://staging.score-to-midi.com",
+        "https://score-to-midi.com",
+        "http://localhost:3000"
+    ],
+    methods=["GET"],
+    expose_headers=["Content-Disposition"]
+)
+@app.route("/api/download/<uuid>", methods=["GET"])
 def download_midi(uuid):
     """
     Download the MIDI file for a given UUID as an attachment.

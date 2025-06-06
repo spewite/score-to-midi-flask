@@ -13,7 +13,7 @@ def configure_logging(app):
         try:
             os.makedirs(log_dir, exist_ok=True)
         except Exception as e:
-            print(f"Warning: Could not create/access log directory: {e}")
+            app.logger.warning(f"Warning: Could not create/access log directory: {e}")
             log_dir = app.root_path
         
         # Set up file logging with rotation
@@ -84,6 +84,6 @@ def configure_logging(app):
         
     except Exception as e:
         import sys
-        print(f"Critical error setting up logging configuration: {e}", file=sys.stderr)
+        app.logger.error(f"Critical error setting up logging configuration: {e}")
     finally: 
         return app
