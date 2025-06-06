@@ -2,7 +2,7 @@ from flask import Flask, current_app, request, jsonify, send_from_directory
 import os
 from os.path import join
 from werkzeug.utils import secure_filename
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from werkzeug.middleware.proxy_fix import ProxyFix
 import uuid
 from pathlib import Path
