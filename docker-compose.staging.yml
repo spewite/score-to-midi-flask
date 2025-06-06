@@ -9,3 +9,4 @@ services:
     restart: always  # Restart in case of error.
     volumes:
     - ./logs:/var/log/gunicorn_staging  # Volumen para logs en el host
+    - ./data:/app/data  # Volumen para logs en el host
