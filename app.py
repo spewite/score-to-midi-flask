@@ -2,7 +2,7 @@ from flask import Flask, current_app, request, jsonify, send_from_directory
 import os
 from os.path import join
 from werkzeug.utils import secure_filename
-from flask_cors import CORS, cross_origin
+
 from werkzeug.middleware.proxy_fix import ProxyFix
 import uuid
 from pathlib import Path
@@ -25,26 +25,6 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1) # Configure https
 
 # Configure logging
 configure_logging(app)
-
-if os.getenv('FLASK_ENV') == 'development':
-    CORS(app)
-else:
-    CORS(app, resources={
-        r"/api/upload": {"origins": [
-            "https://score-to-midi.com",
-            "https://staging.score-to-midi.com"
-        ]},
-        r"/api/download": {"origins": [
-            "https://score-to-midi.com",
-            "https://staging.score-to-midi.com"
-        ]},
-        r"/api/score": {"origins": [
-            "https://score-to-midi.com",
-            "https://staging.score-to-midi.com"
-        ]},
-        r"/health": {"origins": "*"}
-})
-    
 
 # Setup upload directory configuration
 app.config['UPLOAD_FOLDER'] = join(app.root_path, os.getenv('UPLOAD_FOLDER'))
@@ -174,15 +154,6 @@ def upload_file():
         return jsonify({'error': "There has been an unexpected error in the conversion. Please, try again."}), 500
 
 
-@cross_origin(
-    origins=[
-        "https://staging.score-to-midi.com",
-        "https://score-to-midi.com",
-        "http://localhost:3000"
-    ],
-    methods=["GET"],
-    expose_headers=["Content-Disposition"]
-)
 @app.route("/api/download/<uuid>", methods=["GET"])
 def download_midi(uuid):
     """
@@ -215,15 +186,6 @@ def download_midi(uuid):
         download_name=midi_file
     )
 
-@cross_origin(
-    origins=[
-        "https://staging.score-to-midi.com",
-        "https://score-to-midi.com",
-        "http://localhost:3000"
-    ],
-    methods=["GET"],
-    expose_headers=["Content-Disposition"]
-)
 @app.route('/api/score/<uuid>', methods=['GET'])
 def download_score(uuid):
     """
