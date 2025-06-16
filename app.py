@@ -7,7 +7,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 import uuid
 from pathlib import Path
 from dotenv import load_dotenv
-from utils.Exceptions import ScoreQualityError, ScoreStructureError, ScoreTooLargeImageError, MidiNotFound
+from utils.Exceptions import ScoreQualityError, ScoreStructureError, ScoreTooLargeImageError, MidiNotFound, AudiverisTimeoutError
 from utils.validation import validate_file
 from utils.config import configure_logging
 from utils.email import send_email_notification
@@ -156,6 +156,12 @@ def upload_file():
     except ScoreTooLargeImageError:
         error_msg = "The uploaded image was too large. Please, upload a smaller image."
         current_app.logger.error("ScoreTooLargeImageError exception")
+        send_email_notification("[🎵 ERROR] File Upload Failed", error_msg, filepath)
+        return jsonify({'error': error_msg}), 400
+
+    except AudiverisTimeoutError:
+        error_msg = "Audiveris took too long to process your file. Please try with a simpler or smaller score, or try again later."
+        current_app.logger.error("AudiverisTimeoutError exception")
         send_email_notification("[🎵 ERROR] File Upload Failed", error_msg, filepath)
         return jsonify({'error': error_msg}), 400
 

@@ -14,3 +14,7 @@ class MidiNotFound(Exception):
 class ScoreTooLargeImageError(Exception):
   """Raised when the uploaded image is too large."""
   pass
+
+class AudiverisTimeoutError(Exception):
+  """Raised when Audiveris times out processing a file."""
+  pass

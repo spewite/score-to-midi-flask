@@ -5,7 +5,7 @@ from pathlib import Path
 import shutil
 from flask import current_app
 from scripts.svg_to_png import convert_svg_to_png
-from utils.Exceptions import ScoreQualityError, ScoreStructureError, ScoreTooLargeImageError
+from utils.Exceptions import ScoreQualityError, ScoreStructureError, ScoreTooLargeImageError, AudiverisTimeoutError
 
 def image_to_mxl(image_path, _uuid):
 
@@ -64,8 +64,12 @@ def image_to_mxl(image_path, _uuid):
 
     # Execute the command.
     current_app.logger.info(f"Running audiveris process: {' '.join(command)}")
-    result = subprocess.run(command, capture_output=True, text=True)
-    
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, timeout=180)
+    except subprocess.TimeoutExpired as e:
+        current_app.logger.error(f"Audiveris process timed out after 180 seconds for file: {image_path}")
+        raise AudiverisTimeoutError("Audiveris took too long to process the file. Please try with a simpler or smaller score, or try again later.")
+
     if result.returncode != 0:
         current_app.logger.error("Command failed!")
         current_app.logger.error(f"Return code: {result.returncode}")
